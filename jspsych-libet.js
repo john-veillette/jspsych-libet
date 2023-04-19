@@ -451,7 +451,7 @@ jsPsych.plugins['libet'] = (function() {
             }
             // add a response listener that cancels the trial stop
             jsPsych.pluginAPI.getKeyboardResponse({
-              valid_responses: ['Space'],
+              valid_responses: jsPsych.ALL_KEYS,
               rt_method: 'performance',
               persist: false,
               allow_held_key: false,
@@ -528,11 +528,12 @@ jsPsych.plugins['libet'] = (function() {
                 persist: true,
                 allow_held_key: true,
                 callback_function: function(info) {
-                  if (info.key == 37) {
+                  var key = info.key.toLowerCase();
+                  if (key == "arrowleft") {
                     rotate_clock('left');
-                  } else if (info.key == 39) {
+                  } else if (key == "arrowright") {
                     rotate_clock('right');
-                  } else if (info.key == 13) {
+                  } else if (key == "enter") {
                     // record estimated theta
                     trial_data.est_end_ms = performance.now();
                     trial_data.theta_est = clock.theta;
