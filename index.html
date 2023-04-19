@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My experiment</title>
+    <script src="jspsych-6.3.1/jspsych.js"></script>
+    <script src="jspsych-6.3.1/plugins/jspsych-html-keyboard-response.js"></script>
+    <script src="jspsych-libet.js"></script>
+    <link href="jspsych-6.3.1/css/jspsych.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body></body>
+  <script>
+
+    // Free trial parameters
+    var tone_file = 'tone.mp3';
+    var tone_target_instr = 'Where was the clock hand when you heard the tone?<br>Use the arrow keys to move it and press enter to confirm.';
+    var key_target_instr = 'Where was the clock hand when you pressed the key?<br>Use the arrow keys to move it and press enter to confirm.';
+    var earliest_can_respond = 2560; // this is one clock period (if using default period)
+    var timeout = 8000;
+    var operant_lag = 250;
+    var fixation_time = 400;
+    var random_duration_spin = function() {
+      var rand_dur = jsPsych.randomization.sampleWithoutReplacement([1000,1500,2000],1)[0];
+      return rand_dur;
+    } 
+    var random_duration_tone = function() {
+      // returns a duration in Uniform(2.5 sec, 8 sec)
+      var rand_dur = Math.random() * (8000 - 2500) + 2500;
+      return rand_dur;
+    } 
+
+    var pre_trial = {
+      type: 'html-keyboard-response',
+      stimulus: 'Press any key to begin a trial'
+    }
+    // define basic trial types
+    var baseline_key = {
+      type: 'libet',
+      cond_bo: 'baseline',
+      cond_kt: 'key',
+      tone_delay_ms: random_duration_tone,
+      tone_file: tone_file,
+      hand_est: true,
+      feedback: true,
+      instructions: key_target_instr,
+      early_ms: earliest_can_respond,
+      timeout_ms: timeout,
+      fixation_ms: fixation_time,
+      spin_continue_ms: random_duration_spin,
+    };
+    var baseline_tone = {
+      type: 'libet',
+      cond_bo: 'baseline',
+      cond_kt: 'tone',
+      tone_delay_ms: random_duration_tone,
+      tone_file: tone_file,
+      hand_est: true,
+      feedback: true,
+      instructions: tone_target_instr,
+      early_ms: earliest_can_respond,
+      timeout_ms: timeout,
+      fixation_ms: fixation_time,
+      spin_continue_ms: random_duration_spin,
+    };
+    var operant_key = {
+      type: 'libet',
+      cond_bo: 'operant',
+      cond_kt: 'key',
+      tone_delay_ms: operant_lag,
+      tone_file: tone_file,
+      hand_est: true,
+      feedback: true,
+      instructions: key_target_instr,
+      early_ms: earliest_can_respond,
+      timeout_ms: timeout,
+      fixation_ms: fixation_time,
+      spin_continue_ms: random_duration_spin,
+    };
+    var operant_tone = {
+      type: 'libet',
+      cond_bo: 'operant',
+      cond_kt: 'tone',
+      tone_delay_ms: operant_lag,
+      tone_file: tone_file,
+      hand_est: true,
+      feedback: true,
+      instructions: tone_target_instr,
+      early_ms: earliest_can_respond,
+      timeout_ms: timeout,
+      fixation_ms: fixation_time,
+      spin_continue_ms: random_duration_spin,
+    };
+
+    // now wrap basic trial types to give feedback
+    var feedbackize = function(trial) {
+      var early_resp_feedback = {
+        type: 'html-keyboard-response',
+        stimulus: 'Please wait one full rotation before pressing a key. Trial will now restart.<br>Press any key to continue.'
+      }
+      var if_early_resp = {
+          timeline: [early_resp_feedback],
+          conditional_function: function(data){
+              var data = jsPsych.data.get().last(1).values()[0];
+              if(data.early){
+                  return true;
+              } else {
+                  return false;
+              }
+          }
+      }
+      var late_resp_feedback = {
+        type: 'html-keyboard-response',
+        stimulus: 'You waited too late to respond. Trial will now restart.<br>Press any key to continue.'
+      }
+      var if_late_resp = {
+          timeline: [late_resp_feedback],
+          conditional_function: function(data){
+              var data = jsPsych.data.get().last(1).values()[0];
+              if(data.timeout){
+                  return true;
+              } else {
+                  return false;
+              }
+          }
+      }
+      var trial_with_feedback = {
+        timeline: [trial, if_early_resp, if_late_resp]
+      }
+      var trial_repeating = {
+          timeline: [trial_with_feedback],
+          loop_function: function(data){
+              if (data.values()[0].timeout || data.values()[0].early) {
+                  return true;
+              } else {
+                  return false;
+              }
+          }
+      }
+      return trial_repeating;
+    }
+
+    var baseline_key_r = feedbackize(baseline_key)
+    var baseline_tone_r = feedbackize(baseline_tone)
+    var operant_key_r = feedbackize(operant_key)
+    var operant_tone_r = feedbackize(operant_tone)
+
+
+    jsPsych.init({
+      timeline: [pre_trial, baseline_key_r, baseline_tone_r, operant_key_r, operant_tone_r],
+      preload_audio: [tone_file],
+      on_finish: function() {
+        jsPsych.data.displayData();
+      }
+    });
+
+  </script>
+</html>
