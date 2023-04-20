@@ -27,6 +27,12 @@
       var rand_dur = Math.random() * (8000 - 2500) + 2500;
       return rand_dur;
     } 
+    var save_params = {
+      tone_delay_ms: true,
+      spin_continue_ms: true,
+      cond_bo: true,
+      cond_kt: true
+    }
 
     var pre_trial = {
       type: 'html-keyboard-response',
@@ -46,6 +52,7 @@
       timeout_ms: timeout,
       fixation_ms: fixation_time,
       spin_continue_ms: random_duration_spin,
+      save_trial_parameters: save_params
     };
     var baseline_tone = {
       type: 'libet',
@@ -60,6 +67,7 @@
       timeout_ms: timeout,
       fixation_ms: fixation_time,
       spin_continue_ms: random_duration_spin,
+      save_trial_parameters: save_params
     };
     var operant_key = {
       type: 'libet',
@@ -74,6 +82,7 @@
       timeout_ms: timeout,
       fixation_ms: fixation_time,
       spin_continue_ms: random_duration_spin,
+      save_trial_parameters: save_params
     };
     var operant_tone = {
       type: 'libet',
@@ -88,6 +97,7 @@
       timeout_ms: timeout,
       fixation_ms: fixation_time,
       spin_continue_ms: random_duration_spin,
+      save_trial_parameters: save_params
     };
 
     // now wrap basic trial types to give feedback
