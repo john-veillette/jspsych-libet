@@ -19,7 +19,7 @@
     var operant_lag = 250;
     var fixation_time = 400;
     var random_duration_spin = function() {
-      var rand_dur = jsPsych.randomization.sampleWithoutReplacement([1000,1500,2000],1)[0];
+      var rand_dur = jsPsych.randomization.sampleWithReplacement([1000,1500,2000],1)[0];
       return rand_dur;
     } 
     var random_duration_tone = function() {
